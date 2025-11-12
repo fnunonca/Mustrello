@@ -32,7 +32,6 @@ export const LoginForm: React.FC = () => {
         type="text"
         value={username}
         onChange={(e) => setUsername(e.target.value)}
-        placeholder="oasis"
         required
       />
       <Input
@@ -40,7 +39,6 @@ export const LoginForm: React.FC = () => {
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="oasis"
         required
       />
       {error && <p className="text-red-600 text-sm">{error}</p>}
