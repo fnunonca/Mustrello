@@ -14,7 +14,7 @@ function App() {
   }, [initAuth]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/Mustrello">
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
