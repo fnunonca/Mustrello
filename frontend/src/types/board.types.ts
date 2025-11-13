@@ -14,6 +14,14 @@ export interface List {
   cards: Card[];
 }
 
+export interface Comment {
+  id: string;
+  cardId: string;
+  text: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export interface Card {
   id: string;
   listId: string;
@@ -22,4 +30,5 @@ export interface Card {
   position: number;
   createdAt: string;
   color?: string;
+  comments: Comment[];
 }
