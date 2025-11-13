@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Board, List, Card } from '../types';
+import type { Board, List, Card, Comment } from '../types';
 import { STORAGE_KEYS } from '../utils/constants';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -23,6 +23,11 @@ interface BoardState {
   updateCard: (cardId: string, updates: Partial<Card>) => void;
   deleteCard: (cardId: string) => void;
   moveCard: (cardId: string, targetListId: string, newPosition: number) => void;
+
+  // Comments
+  addComment: (cardId: string, text: string) => void;
+  updateComment: (commentId: string, text: string) => void;
+  deleteComment: (commentId: string) => void;
 
   // Persistence
   saveToLocalStorage: () => void;
@@ -144,6 +149,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
               description,
               position: list.cards.length,
               createdAt: new Date().toISOString(),
+              comments: [],
             };
             return { ...list, cards: [...list.cards, newCard] };
           }
@@ -244,6 +250,92 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
       return { boards: finalBoards };
     });
+
+    if (get().currentBoard) {
+      const boardId = get().currentBoard!.id;
+      const updatedBoard = get().boards.find((b) => b.id === boardId);
+      set({ currentBoard: updatedBoard || null });
+    }
+
+    get().saveToLocalStorage();
+  },
+
+  addComment: (cardId: string, text: string) => {
+    set((state) => ({
+      boards: state.boards.map((board) => ({
+        ...board,
+        lists: board.lists.map((list) => ({
+          ...list,
+          cards: list.cards.map((card) => {
+            if (card.id === cardId) {
+              const newComment: Comment = {
+                id: uuidv4(),
+                cardId,
+                text,
+                createdAt: new Date().toISOString(),
+              };
+              return {
+                ...card,
+                comments: [...(card.comments || []), newComment],
+              };
+            }
+            return card;
+          }),
+        })),
+      })),
+    }));
+
+    if (get().currentBoard) {
+      const boardId = get().currentBoard!.id;
+      const updatedBoard = get().boards.find((b) => b.id === boardId);
+      set({ currentBoard: updatedBoard || null });
+    }
+
+    get().saveToLocalStorage();
+  },
+
+  updateComment: (commentId: string, text: string) => {
+    set((state) => ({
+      boards: state.boards.map((board) => ({
+        ...board,
+        lists: board.lists.map((list) => ({
+          ...list,
+          cards: list.cards.map((card) => ({
+            ...card,
+            comments: (card.comments || []).map((comment) =>
+              comment.id === commentId
+                ? { ...comment, text, updatedAt: new Date().toISOString() }
+                : comment
+            ),
+          })),
+        })),
+      })),
+    }));
+
+    if (get().currentBoard) {
+      const boardId = get().currentBoard!.id;
+      const updatedBoard = get().boards.find((b) => b.id === boardId);
+      set({ currentBoard: updatedBoard || null });
+    }
+
+    get().saveToLocalStorage();
+  },
+
+  deleteComment: (commentId: string) => {
+    set((state) => ({
+      boards: state.boards.map((board) => ({
+        ...board,
+        lists: board.lists.map((list) => ({
+          ...list,
+          cards: list.cards.map((card) => ({
+            ...card,
+            comments: (card.comments || []).filter(
+              (comment) => comment.id !== commentId
+            ),
+          })),
+        })),
+      })),
+    }));
 
     if (get().currentBoard) {
       const boardId = get().currentBoard!.id;

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, Trash2, Pencil } from 'lucide-react';
 import type { Card } from '../../types';
 import { useBoardStore } from '../../store/boardStore';
 import { CardColorPicker } from './CardColorPicker';
+import { EditCardModal } from './EditCardModal';
 
 interface CardItemProps {
   card: Card;
@@ -13,6 +14,7 @@ interface CardItemProps {
 export const CardItem: React.FC<CardItemProps> = ({ card }) => {
   const deleteCard = useBoardStore((state) => state.deleteCard);
   const updateCard = useBoardStore((state) => state.updateCard);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const {
     attributes,
@@ -40,44 +42,69 @@ export const CardItem: React.FC<CardItemProps> = ({ card }) => {
     updateCard(card.id, { color });
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = (title: string, description: string) => {
+    updateCard(card.id, { title, description });
+  };
+
   return (
-    <div
-      ref={setNodeRef}
-      style={{
-        ...style,
-        backgroundColor: card.color || 'white',
-      }}
-      className="rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 mb-2 border border-gray-200 group"
-    >
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <h4 className="font-medium text-gray-900 mb-1">{card.title}</h4>
-          {card.description && (
-            <p className="text-sm text-gray-600 line-clamp-2">
-              {card.description}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center ml-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <CardColorPicker
-            currentColor={card.color}
-            onColorChange={handleColorChange}
-          />
-          <button
-            {...attributes}
-            {...listeners}
-            className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
-          >
-            <GripVertical size={16} />
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-gray-400 hover:text-red-600"
-          >
-            <Trash2 size={16} />
-          </button>
+    <>
+      <div
+        ref={setNodeRef}
+        style={{
+          ...style,
+          backgroundColor: card.color || 'white',
+        }}
+        className="rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 mb-2 border border-gray-200 group"
+      >
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <h4 className="font-medium text-gray-900 mb-1">{card.title}</h4>
+            {card.description && (
+              <p className="text-sm text-gray-600 line-clamp-2">
+                {card.description}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center ml-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={handleEdit}
+              className="text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
+              title="Editar tarjeta"
+            >
+              <Pencil size={16} />
+            </button>
+            <CardColorPicker
+              currentColor={card.color}
+              onColorChange={handleColorChange}
+            />
+            <button
+              {...attributes}
+              {...listeners}
+              className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing"
+            >
+              <GripVertical size={16} />
+            </button>
+            <button
+              onClick={handleDelete}
+              className="text-gray-400 hover:text-red-600"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+
+      <EditCardModal
+        card={card}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveEdit}
+      />
+    </>
   );
 };
