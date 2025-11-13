@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2 } from 'lucide-react';
 import type { Card } from '../../types';
 import { useBoardStore } from '../../store/boardStore';
+import { CardColorPicker } from './CardColorPicker';
 
 interface CardItemProps {
   card: Card;
@@ -11,6 +12,7 @@ interface CardItemProps {
 
 export const CardItem: React.FC<CardItemProps> = ({ card }) => {
   const deleteCard = useBoardStore((state) => state.deleteCard);
+  const updateCard = useBoardStore((state) => state.updateCard);
 
   const {
     attributes,
@@ -34,11 +36,18 @@ export const CardItem: React.FC<CardItemProps> = ({ card }) => {
     }
   };
 
+  const handleColorChange = (color: string | undefined) => {
+    updateCard(card.id, { color });
+  };
+
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 mb-2 border border-gray-200 group"
+      style={{
+        ...style,
+        backgroundColor: card.color || 'white',
+      }}
+      className="rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 mb-2 border border-gray-200 group"
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
@@ -50,6 +59,10 @@ export const CardItem: React.FC<CardItemProps> = ({ card }) => {
           )}
         </div>
         <div className="flex items-center ml-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <CardColorPicker
+            currentColor={card.color}
+            onColorChange={handleColorChange}
+          />
           <button
             {...attributes}
             {...listeners}
