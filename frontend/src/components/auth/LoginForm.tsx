@@ -8,20 +8,28 @@ export const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
-    const success = login(username, password);
+    try {
+      const success = await login(username, password);
 
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setError('Usuario o contraseña incorrectos');
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError('Usuario o contraseña incorrectos');
+      }
+    } catch {
+      setError('Error de conexión. Por favor, intente de nuevo.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -33,6 +41,7 @@ export const LoginForm: React.FC = () => {
         value={username}
         onChange={(e) => setUsername(e.target.value)}
         required
+        disabled={isSubmitting}
       />
       <Input
         label="Contraseña"
@@ -40,10 +49,11 @@ export const LoginForm: React.FC = () => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
+        disabled={isSubmitting}
       />
       {error && <p className="text-red-600 text-sm">{error}</p>}
-      <Button type="submit" className="w-full">
-        Iniciar Sesión
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
       </Button>
       <p className="text-sm text-gray-600 text-center">
         Usuario: <strong>oasis</strong> | Contraseña: <strong>oasis</strong>
