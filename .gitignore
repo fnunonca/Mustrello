@@ -1,10 +1,80 @@
 # Claude Code settings (local)
 .claude/
 
+# =========================
+# .NET / C# Backend
+# =========================
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.user
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET
+ScaffoldingReadMe.txt
+
+# Entity Framework
+*.dbmdl
+*.dbproj.schemaview
+*.jfm
+*.pfx
+*.publishsettings
+
+# User-specific files
+*.rsuser
+*.pubxml
+!**/[Pp]ublish[Pp]rofiles/*.pubxml
+
+# Application Insights
+ApplicationInsights.config
+
+# Rider
+.idea/
+
+# macOS
+.DS_Store
+
+# dotnet
+*.DotSettings.user
+.dotnet/
+tools/
+
+# appsettings overrides (keep templates)
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json.template
+
 # Temporary files
 *.tmp
 *.temp
-.DS_Store
 Thumbs.db
 
 # Screenshots and images (temporary)
@@ -13,7 +83,6 @@ screenshot*.png
 
 # IDE specific files
 .vscode/
-.idea/
 
 # Environment variables (if sensitive)
 # .env
@@ -25,7 +94,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # OS generated files
-.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
