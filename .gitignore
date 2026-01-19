@@ -100,3 +100,10 @@ yarn-error.log*
 .Trashes
 ehthumbs.db
 Desktop.ini
+
+# Backend publish artifacts
+**/publish/
+*.zip
+
+# Sensitive files
+bd.md
