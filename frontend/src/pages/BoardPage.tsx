@@ -6,8 +6,9 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from '@dnd-kit/core';
-import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import type { DragEndEvent, DragStartEvent, DragOverEvent } from '@dnd-kit/core';
 import { ArrowLeft } from 'lucide-react';
 import { Navbar } from '../components/layout/Navbar';
 import { ListContainer } from '../components/list/ListContainer';
@@ -48,6 +49,11 @@ export const BoardPage: React.FC = () => {
     }
   };
 
+  const handleDragOver = (_event: DragOverEvent) => {
+    // This handler enables real-time tracking when dragging over containers
+    // The actual move happens in handleDragEnd
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveCard(null);
@@ -55,16 +61,48 @@ export const BoardPage: React.FC = () => {
     if (!over || !currentBoard) return;
 
     const cardId = active.id as string;
-    const targetListId = over.id as string;
+    const overId = over.id as string;
 
-    // Encontrar la lista objetivo
-    const targetList = currentBoard.lists.find((list) => list.id === targetListId);
-    if (!targetList) return;
+    // Check if over.id is a list or a card
+    let targetList = currentBoard.lists.find((list) => list.id === overId);
+    let newPosition: number;
 
-    // Calcular nueva posición
-    const newPosition = targetList.cards.length;
+    if (targetList) {
+      // Dropped directly on a list - add at the end
+      newPosition = targetList.cards.length;
+    } else {
+      // over.id might be a card - find which list contains it
+      for (const list of currentBoard.lists) {
+        const cardIndex = list.cards.findIndex((c) => c.id === overId);
+        if (cardIndex !== -1) {
+          targetList = list;
+          // Insert at the position of the card we dropped on
+          newPosition = cardIndex;
+          break;
+        }
+      }
 
-    moveCard(cardId, targetListId, newPosition);
+      if (!targetList) return;
+    }
+
+    // Find source list to check if we're moving within the same list
+    const sourceList = currentBoard.lists.find((list) =>
+      list.cards.some((c) => c.id === cardId)
+    );
+
+    // Don't move if dropping on itself
+    if (sourceList?.id === targetList.id) {
+      const sourceIndex = sourceList.cards.findIndex((c) => c.id === cardId);
+      if (sourceIndex === newPosition! || sourceIndex === newPosition! - 1) {
+        return;
+      }
+    }
+
+    moveCard(cardId, targetList.id, newPosition!);
+  };
+
+  const handleDragCancel = () => {
+    setActiveCard(null);
   };
 
   if (!currentBoard) {
@@ -103,8 +141,11 @@ export const BoardPage: React.FC = () => {
 
         <DndContext
           sensors={sensors}
+          collisionDetection={closestCorners}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
         >
           <div className="flex space-x-4 overflow-x-auto pb-4">
             {currentBoard.lists.map((list) => (
