@@ -55,9 +55,6 @@ export const LoginForm: React.FC = () => {
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
       </Button>
-      <p className="text-sm text-gray-600 text-center">
-        Usuario: <strong>oasis</strong> | Contraseña: <strong>oasis</strong>
-      </p>
     </form>
   );
 };
