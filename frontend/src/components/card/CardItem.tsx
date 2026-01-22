@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, Pencil } from 'lucide-react';
+import { GripVertical, Trash2, Pencil, ArrowRightLeft } from 'lucide-react';
 import type { Card } from '../../types';
 import { useBoardStore } from '../../store/boardStore';
 import { CardColorPicker } from './CardColorPicker';
@@ -14,7 +14,11 @@ interface CardItemProps {
 export const CardItem: React.FC<CardItemProps> = ({ card }) => {
   const deleteCard = useBoardStore((state) => state.deleteCard);
   const updateCard = useBoardStore((state) => state.updateCard);
+  const currentBoard = useBoardStore((state) => state.currentBoard);
+  const moveCard = useBoardStore((state) => state.moveCard);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showMoveMenu, setShowMoveMenu] = useState(false);
+  const moveMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     attributes,
@@ -51,6 +55,35 @@ export const CardItem: React.FC<CardItemProps> = ({ card }) => {
     updateCard(card.id, { title, description });
   };
 
+  const handleMoveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowMoveMenu(!showMoveMenu);
+  };
+
+  const handleMoveToList = (targetListId: string) => {
+    moveCard(card.id, targetListId, 0);
+    setShowMoveMenu(false);
+  };
+
+  // Close move menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moveMenuRef.current && !moveMenuRef.current.contains(event.target as Node)) {
+        setShowMoveMenu(false);
+      }
+    };
+
+    if (showMoveMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMoveMenu]);
+
+  const otherLists = currentBoard?.lists.filter(list => list.id !== card.listId) || [];
+
   return (
     <>
       <div
@@ -82,6 +115,36 @@ export const CardItem: React.FC<CardItemProps> = ({ card }) => {
               currentColor={card.color}
               onColorChange={handleColorChange}
             />
+            <div className="relative" ref={moveMenuRef}>
+              <button
+                onClick={handleMoveClick}
+                className="text-gray-400 hover:text-blue-600 p-1 rounded hover:bg-gray-100"
+                title="Mover a otra lista"
+              >
+                <ArrowRightLeft size={16} />
+              </button>
+              {showMoveMenu && otherLists.length > 0 && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 min-w-[150px]">
+                  <div className="px-3 py-1 text-xs font-semibold text-gray-500 uppercase">
+                    Mover a
+                  </div>
+                  {otherLists.map(list => (
+                    <button
+                      key={list.id}
+                      onClick={() => handleMoveToList(list.id)}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      {list.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {showMoveMenu && otherLists.length === 0 && (
+                <div className="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-200 py-2 px-3 z-50 min-w-[150px]">
+                  <span className="text-sm text-gray-500">No hay otras listas</span>
+                </div>
+              )}
+            </div>
             <button
               {...attributes}
               {...listeners}
