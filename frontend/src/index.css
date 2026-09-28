@@ -19,3 +19,446 @@
   --color-primary-800: #1e40af;
   --color-primary-900: #1e3a8a;
 }
+
+/* =========================================================================
+   Boards dashboard — 3D redesign
+   Ported from prototypes/boards-3d.html, scoped under .dashboard-shell so
+   it never leaks into the rest of the app (Navbar, other pages).
+   ========================================================================= */
+
+.dashboard-shell {
+  --db-bg: #eef0f7;
+  --db-bg-2: #e3e7f3;
+  --db-surface: rgba(255, 255, 255, 0.72);
+  --db-surface-solid: #ffffff;
+  --db-border: rgba(20, 24, 40, 0.1);
+  --db-text: #141828;
+  --db-muted: #5b6275;
+  --accent: #0a74f0;
+  --accent-2: #7b5cff;
+  --danger: #e5484d;
+  --db-shadow: 0 1px 2px rgba(20, 24, 40, 0.06), 0 12px 32px -12px rgba(20, 24, 40, 0.25);
+  --db-shadow-hover: 0 2px 4px rgba(20, 24, 40, 0.08), 0 30px 60px -20px rgba(40, 50, 120, 0.45);
+  --db-radius: 18px;
+  position: relative;
+  background: radial-gradient(1200px 600px at 80% -10%, var(--db-bg-2), transparent 60%), var(--db-bg);
+}
+
+.boards-bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dashboard-hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.dashboard-title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  background: linear-gradient(120deg, var(--db-text) 30%, var(--accent) 70%, var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.dashboard-subtitle {
+  margin: 10px 0 0;
+  color: var(--db-muted);
+}
+
+.dashboard-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.view-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 10px;
+  background: var(--db-border);
+  gap: 2px;
+}
+
+.view-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--db-muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.view-toggle button[aria-pressed='true'] {
+  background: var(--db-surface-solid);
+  color: var(--db-text);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.btn-gradient-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 10px 24px -10px var(--accent), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn-gradient-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px -12px var(--accent);
+}
+
+.btn-gradient-primary:active {
+  transform: translateY(0);
+}
+
+.dashboard-empty {
+  text-align: center;
+  padding: 64px 24px;
+  border-radius: var(--db-radius);
+  background: var(--db-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--db-border);
+  box-shadow: var(--db-shadow);
+}
+
+.dashboard-empty-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 12px 24px -10px var(--accent);
+}
+
+.dashboard-empty p {
+  margin: 0 0 16px;
+  color: var(--db-muted);
+  font-size: 17px;
+}
+
+.boards-grid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  perspective: 1200px;
+}
+
+/* ---------- Board card ---------- */
+
+.board-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  --gx: 50%;
+  --gy: 50%;
+  position: relative;
+  border-radius: var(--db-radius);
+  background: var(--db-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--db-border);
+  box-shadow: var(--db-shadow);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.25s ease-out, box-shadow 0.25s;
+  animation: board-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  cursor: pointer;
+  outline: none;
+}
+
+.board-card:hover {
+  box-shadow: var(--db-shadow-hover);
+}
+
+.board-card:focus-visible {
+  box-shadow: var(--db-shadow-hover), 0 0 0 2px var(--accent);
+}
+
+.board-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(400px circle at var(--gx) var(--gy), rgba(255, 255, 255, 0.22), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.board-card:hover::after,
+.board-card.is-tilting::after {
+  opacity: 1;
+}
+
+@keyframes board-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) rotateX(12deg);
+  }
+}
+
+.board-cover {
+  position: relative;
+  height: 120px;
+  margin: 8px 8px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  transform: translateZ(30px);
+  display: flex;
+  gap: 6px;
+  padding: 14px;
+  align-items: flex-start;
+}
+
+.board-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120px 80px at 85% 20%, rgba(255, 255, 255, 0.35), transparent 70%);
+}
+
+.mini-col {
+  position: relative;
+  flex: 1;
+  min-height: 24px;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 6px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.25);
+}
+
+.mini-col i {
+  display: block;
+  height: 9px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.mini-col i:nth-child(2n) {
+  width: 75%;
+}
+
+.board-badge {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.28);
+  padding: 3px 8px;
+  border-radius: 999px;
+  backdrop-filter: blur(4px);
+}
+
+.board-body {
+  padding: 14px 18px 18px;
+  transform: translateZ(20px);
+}
+
+.board-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--db-text);
+}
+
+.board-description {
+  margin: 4px 0 12px;
+  font-size: 13px;
+  color: var(--db-muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.board-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--db-muted);
+  margin-bottom: 14px;
+}
+
+.board-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.board-actions button {
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  border-radius: 9px;
+  padding: 7px 12px;
+  border: 1px solid var(--db-border);
+  background: var(--db-surface-solid);
+  color: var(--db-text);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.board-action-open {
+  background: var(--db-text);
+  color: var(--db-bg);
+  border-color: transparent;
+}
+
+.board-action-open:hover {
+  opacity: 0.88;
+}
+
+.board-action-delete {
+  margin-left: auto;
+  border-color: transparent;
+  background: transparent;
+  color: var(--db-muted);
+  display: inline-flex;
+  align-items: center;
+}
+
+.board-action-delete:hover {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+}
+
+.board-create-tile {
+  border: 2px dashed var(--db-border);
+  border-radius: var(--db-radius);
+  background: transparent;
+  min-height: 270px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--db-muted);
+  font: inherit;
+  text-align: center;
+  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  animation: board-rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+.board-create-tile:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.board-create-plus {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 10px;
+  border-radius: 16px;
+  font-size: 28px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  box-shadow: 0 12px 24px -10px var(--accent);
+}
+
+/* ---------- 3D carousel ---------- */
+
+.carousel-wrapper {
+  position: relative;
+}
+
+.carousel-stage {
+  position: relative;
+  height: min(70vh, 620px);
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid var(--db-border);
+  background: var(--db-surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--db-shadow);
+  cursor: grab;
+  touch-action: pan-y;
+  outline: none;
+}
+
+.carousel-stage:active {
+  cursor: grabbing;
+}
+
+.carousel-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--db-muted);
+  background: var(--db-surface-solid);
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--db-border);
+  white-space: nowrap;
+}
+
+.carousel-loading {
+  height: min(70vh, 620px);
+  display: grid;
+  place-items: center;
+  color: var(--db-muted);
+  border-radius: 24px;
+  border: 1px solid var(--db-border);
+  background: var(--db-surface);
+}
+
+@media (max-width: 640px) {
+  .dashboard-hero-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .board-card,
+  .board-create-tile {
+    animation: none;
+  }
+
+  .board-card {
+    transform: none !important;
+  }
+}
